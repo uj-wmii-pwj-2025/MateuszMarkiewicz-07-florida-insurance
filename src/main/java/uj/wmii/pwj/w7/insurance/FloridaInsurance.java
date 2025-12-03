@@ -95,14 +95,14 @@ public class FloridaInsurance {
 
     private static void createMostValuableFile(List<InsuranceRecord> data) {
 
-        Map<String, Double> growthMap = data.stream().collect(groupingBy(
-                record -> record.county,
-                summingDouble(record -> record.tiv2012 - record.tiv2011)));
-
-        List<Map.Entry<String, Double>> highestGrowth = growthMap.entrySet().stream()
-                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
-                .limit(10)
-                .toList();
+        List<Map.Entry<String, Double>> highestGrowth = data.stream()
+                .collect(collectingAndThen(
+                        groupingBy(record -> record.county, summingDouble(record -> record.tiv2012 - record.tiv2011)),
+                        m -> m.entrySet().stream()
+                                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+                                .limit(10)
+                                .toList()
+                ));
 
         try (BufferedWriter writer = newBufferedWriter(of(MOST_VALUABLE_FILE))) {
             writer.write("country,value");
